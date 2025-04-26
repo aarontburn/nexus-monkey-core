@@ -1,0 +1,9 @@
+{
+    "name": "{EXPORTED_MODULE_NAME}",
+    "author": "aarontburn",
+    "version": "1.0.0",
+    "description": "A library to manage external windows.",
+    "build_version": 1,
+    "platforms": [],
+    "link": "https://github.com/aarontburn/nexus-template-internal"
+}
