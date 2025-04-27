@@ -31,9 +31,9 @@ export default class Monkey {
 
         const existingAppWindow: Window = this.findBestWindow();
         if (existingAppWindow === undefined) {
-            if (this.exePath.trim() !== "") {
+            if (monkeyParams.exePath.trim() !== "") {
                 console.info(`🐒 ${monkeyParams.appName} Monkey: Making a new ${monkeyParams.appName} instance.`);
-                spawn(this.exePath, [], { detached: !monkeyParams.closeOnExit, stdio: 'ignore' })
+                spawn(monkeyParams.exePath, [], { detached: !monkeyParams.closeOnExit, stdio: 'ignore' })
                     .on('error', (err) => {
                         console.error(err)
                     });
@@ -54,7 +54,7 @@ export default class Monkey {
 
 
     private onWindowChange(window: Window) {
-        if (window.path === this.exePath) { // activated window, swap modules?
+        if (window.path === this.monkeyParams.exePath) { // activated window, swap modules?
             if (BaseWindow.getAllWindows()[0].isMinimized()) {
                 BaseWindow.getAllWindows()[0].restore();
             }
