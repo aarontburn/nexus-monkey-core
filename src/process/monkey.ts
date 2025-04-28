@@ -108,7 +108,6 @@ export default class Monkey {
         window.contentView.children[0].on('bounds-changed', this.resizeListener)
         window.on('resize', this.resizeListener)
         window.on('move', this.resizeListener)
-
     }
 
     private readonly resizeListener = () => this.resize();
@@ -139,7 +138,7 @@ export default class Monkey {
 
     private getMonitorSize(): Rectangle {
         const window: BaseWindow = BaseWindow.getAllWindows()[0];
-        const appScale = this.appWindow.getMonitor().getScaleFactor();
+        const appScale: number | undefined = this.appWindow?.getMonitor().getScaleFactor();
         const scale = screen.getDisplayMatching(window.getBounds()).scaleFactor;
         const display = screen.getDisplayMatching(window.getBounds()).bounds;
         return {
@@ -152,7 +151,6 @@ export default class Monkey {
 
 
     public resize() {
-
         if (this.isMinimized()) {
             if (this.isShown) {
                 this.appWindow.restore()
