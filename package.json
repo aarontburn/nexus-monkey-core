@@ -1,7 +1,7 @@
 {
-  "name": "nexus-template-internal",
+  "name": "nexus-monkey-core",
   "version": "1.0.0",
-  "description": "A developer template to create a internal, no-gui module for Nexus.",
+  "description": "A library to manage external windows.",
   "author": "aarontburn",
   "scripts": {
     "start": "npm run dev_export && cd ./node_modules/@nexus/nexus-client/ && npm start",

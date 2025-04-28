@@ -6,9 +6,16 @@ export interface MonkeyParams {
     sourceModule: IPCSource;
     appName: string;
     exePath: string;
-    filter: Filter;
     closeOnExit: boolean;
     isShown: boolean;
+    filter: Filter;
+    callback?: ((event: MonkeyEvents) => void) | undefined
 }
 
 export type Filter = (window: Window) => boolean;
+
+export type MonkeyEvents =
+    "found-window" |
+    "show" |
+    "hide" |
+    "lost-window"

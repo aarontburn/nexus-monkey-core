@@ -3,7 +3,7 @@
     "author": "aarontburn",
     "version": "1.0.0",
     "description": "A library to manage external windows.",
-    "build_version": 1,
+    "build_version": 3,
     "platforms": [],
-    "link": "https://github.com/aarontburn/nexus-template-internal"
+    "link": "https://github.com/aarontburn/nexus-monkey-core"
 }

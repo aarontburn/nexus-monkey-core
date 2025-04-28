@@ -31,22 +31,19 @@ export default class MonkeyCoreProcess extends Process {
 
     public async onExit(): Promise<void> {
         for (const monkey of Object.values(this.monkeyMap)) {
-            monkey.appWindow.setOwner(null);
+            monkey.appWindow?.setOwner(null);
             monkey.show();
         }
     }
 
-    public async handleExternal(source: IPCSource, eventType: string, ...data: any[]): Promise<DataResponse> {
+    public async handleExternal(source: IPCSource, eventType: string, data: any[]): Promise<DataResponse> {
         switch (eventType) {
             case "add-window": {
-                const params: MonkeyParams = { ...(data[0])[0],  sourceModule: source  };
+                const params: MonkeyParams = { ...(data[0]), sourceModule: source };
                 this.monkeyMap[source.getIPCSource()]?.cleanup();
-                const monkey: Monkey = new Monkey(this, params);
-                this.monkeyMap[source.getIPCSource()] = monkey;
+                this.monkeyMap[source.getIPCSource()] = new Monkey(this, params);
 
                 return { body: undefined, code: HTTPStatusCodes.OK }
-
-
             }
             case "show": {
                 this.monkeyMap[source.getIPCSource()]?.show();
@@ -57,6 +54,25 @@ export default class MonkeyCoreProcess extends Process {
                 this.monkeyMap[source.getIPCSource()]?.hide();
                 return { body: undefined, code: HTTPStatusCodes.OK }
             }
+
+            case "detach": {
+                this.monkeyMap[source.getIPCSource()]?.detach();
+
+                break;
+            }
+
+            case "reattach": {
+                this.monkeyMap[source.getIPCSource()]?.reattach();
+
+                break;
+            }
+
+            case "wait-for-window": {
+                this.monkeyMap[source.getIPCSource()]?.waitForWindow();
+
+                break;
+            }
+
 
             default: {
                 return { body: undefined, code: HTTPStatusCodes.NOT_IMPLEMENTED }
