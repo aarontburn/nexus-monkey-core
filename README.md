@@ -7,6 +7,7 @@ A internal module for [Nexus](https://github.com/aarontburn/nexus-core) that can
 2. In Nexus, navigate to **Settings** > **Import Module**
 3. Select the downloaded `.zip` file to install.
 
-## Examples
+## Dependents
 ### [Spotify Monkey](https://github.com/aarontburn/nexus-spotify-monkey)
 ### [Discord Monkey](https://github.com/aarontburn/nexus-discord-monkey)
+### [GitHub Desktop Monkey](https://github.com/aarontburn/nexus-github-desktop-monkey)
