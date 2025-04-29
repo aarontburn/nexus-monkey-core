@@ -1,5 +1,5 @@
 import { Window } from "node-window-manager";
-import { IPCSource, } from "@nexus/nexus-module-builder"
+import { IPCSource, } from "@nexus-app/nexus-module-builder"
 
 
 export interface MonkeyParams {

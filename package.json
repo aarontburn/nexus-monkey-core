@@ -4,12 +4,12 @@
   "description": "A library to manage external windows.",
   "author": "aarontburn",
   "scripts": {
-    "start": "npm run dev_export && cd ./node_modules/@nexus/nexus-client/ && npm start",
-    "export": "node node_modules/@nexus/nexus-exporter/exporter.js",
-    "dev_export": "node node_modules/@nexus/nexus-exporter/exporter.js --dev",
-    "postinstall": "npm install https://gitpkg.vercel.app/aarontburn/nexus-core/nexus/dist?main --no-save"
+    "start": "npm run dev_export && cd ./node_modules/@nexus-app/nexus-client/ && npm start",
+    "export": "node node_modules/@nexus-app/nexus-exporter/exporter.js",
+    "dev_export": "node node_modules/@nexus-app/nexus-exporter/exporter.js --dev"
   },
   "devDependencies": {
+    "@nexus-app/nexus-client": "^0.0.1",
     "@types/yauzl-promise": "^4.0.1",
     "electron": "^35.1.5",
     "typescript": "^4.8.3",
