@@ -242,9 +242,9 @@ export default class Monkey {
 
         this.appWindow?.setBounds({
             x: (windowContentBounds.x + 70 * windowZoom) / scales.height,
-            y: (windowContentBounds.y + 35 * windowZoom) / scales.height,
+            y: (windowContentBounds.y + 35 * windowZoom + 1) / scales.height,
             width: (windowContentBounds.width - 70 * windowZoom) / scales.width,
-            height: (windowContentBounds.height - 35 * windowZoom) / scales.height,
+            height: (windowContentBounds.height - 35 * windowZoom - 1) / scales.height,
         });
 
     }
