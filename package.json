@@ -1,6 +1,5 @@
 {
   "name": "nexus-monkey-core",
-  "version": "1.0.0",
   "description": "A library to manage external windows.",
   "author": "aarontburn",
   "scripts": {
@@ -10,12 +9,14 @@
   },
   "devDependencies": {
     "@nexus-app/nexus-client": "^0.0.1",
+    "@types/pngjs": "^6.0.5",
     "@types/yauzl-promise": "^4.0.1",
     "electron": "^35.1.5",
     "typescript": "^4.8.3",
     "yauzl-promise": "^4.0.0"
   },
   "dependencies": {
-    "node-window-manager": "^2.2.4"
+    "node-window-manager": "^2.2.4",
+    "pngjs": "^7.0.0"
   }
 }

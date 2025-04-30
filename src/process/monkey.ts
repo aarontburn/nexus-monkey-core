@@ -1,9 +1,10 @@
 import { spawn } from "child_process";
-import { BaseWindow, WebContentsView, Rectangle } from "electron";
+import { BaseWindow, WebContentsView, Rectangle, app } from "electron";
 import { Window, windowManager } from "node-window-manager";
 import MonkeyCoreProcess from "./main";
 import { screen } from "electron"
 import { MonkeyParams } from "./monkey-params";
+import { PNG } from "pngjs"
 
 const MINIMIZED_WIDTH: number = 160
 
@@ -29,12 +30,15 @@ export default class Monkey {
     public constructor(process: MonkeyCoreProcess, monkeyParams: MonkeyParams) {
         this.monkeyParams = monkeyParams;
         this.process = process;
+        this.isShown = monkeyParams.isShown;
 
-        windowManager.on('window-activated', this.onWindowChange.bind(this))
+        windowManager.on('window-activated', this.onWindowChange.bind(this));
 
         this.nexusWindowHandle = BaseWindow.getAllWindows()[0].getNativeWindowHandle().readInt32LE(0);
 
-        this.waitForWindow()
+        if (monkeyParams.locateOnStartup) {
+            this.waitForWindow();
+        }
     }
 
     public waitForWindow() {
@@ -103,6 +107,8 @@ export default class Monkey {
         if (newWindow) {
             this.monkeyParams.callback("found-window");
         }
+
+
         this.isAttached = true;
 
         this.appWindow = appWindow;

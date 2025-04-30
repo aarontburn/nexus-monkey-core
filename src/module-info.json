@@ -3,7 +3,7 @@
     "author": "aarontburn",
     "version": "1.0.1",
     "description": "A library to manage external windows.",
-    "build_version": 6,
+    "build_version": 7,
     "platforms": [],
     "link": "https://github.com/aarontburn/nexus-monkey-core"
 }

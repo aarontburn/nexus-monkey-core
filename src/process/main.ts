@@ -36,9 +36,31 @@ export default class MonkeyCoreProcess extends Process {
         }
     }
 
+    private isValidParams(obj: any): obj is MonkeyParams {
+        if (typeof obj.locateOnStartup !== 'boolean') { // undefined or invalid 
+            obj.locateOnStartup = true;
+        }
+
+        return (
+            typeof obj === 'object' &&
+            obj !== null &&
+            typeof obj.appName === 'string' &&
+            typeof obj.exePath === 'string' &&
+            typeof obj.closeOnExit === 'boolean' &&
+            typeof obj.isShown === 'boolean' &&
+            typeof obj.locateOnStartup === 'boolean' && 
+            typeof obj.filter === 'function' &&
+            (typeof obj.callback === 'undefined' || typeof obj.callback === 'function')
+        );
+    }
+
     public async handleExternal(source: IPCSource, eventType: string, data: any[]): Promise<DataResponse> {
         switch (eventType) {
             case "add-window": {
+                if (!this.isValidParams(data[0])) {
+                    return { body: undefined, code: HTTPStatusCodes.BAD_REQUEST }
+                }
+
                 const params: MonkeyParams = { ...(data[0]), sourceModule: source };
                 this.monkeyMap[source.getIPCSource()]?.cleanup();
                 this.monkeyMap[source.getIPCSource()] = new Monkey(this, params);
