@@ -102,7 +102,6 @@ export default class Monkey {
     private attachHandlersToWindow(appWindow: Window, newWindow: boolean = true) {
         if (newWindow) {
             this.monkeyParams.callback("found-window");
-            console.info(`🐒 ${this.monkeyParams.appName} Monkey: ${this.monkeyParams.appName} instance found.`);
         }
         this.isAttached = true;
 
