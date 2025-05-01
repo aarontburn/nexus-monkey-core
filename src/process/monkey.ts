@@ -4,7 +4,6 @@ import { Window, windowManager } from "node-window-manager";
 import MonkeyCoreProcess from "./main";
 import { screen } from "electron"
 import { MonkeyParams } from "./monkey-params";
-import { PNG } from "pngjs"
 
 const MINIMIZED_WIDTH: number = 160
 
@@ -85,12 +84,12 @@ export default class Monkey {
 
                 const best: Window | undefined = this.findBestWindow();
                 if (best !== undefined) {
-                    console.info(`🐒 ${this.monkeyParams.appName} Monkey: Found window in ${checkCount} loops.`);
+                    console.info(`🐒 ${this.monkeyParams.appName} Monkey: Located window in ${checkCount + 1} attempts.`);
                     return resolve(best);
                 }
 
                 if (Date.now() - startMS >= (TOTAL_CHECK_TIME_SEC * 1000)) {
-                    return reject(`🐒 ${this.monkeyParams.appName} Monkey: Could not find the ${this.monkeyParams.appName} window found within timeout.`);
+                    return reject(`🐒 ${this.monkeyParams.appName} Monkey: Could not locate ${this.monkeyParams.appName} within timeout.`);
                 }
 
                 setTimeout(check, (SEC_PER_CHECK * 1000));
