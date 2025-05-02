@@ -9,6 +9,7 @@ export interface MonkeyParams {
     closeOnExit: boolean;
     isShown: boolean;
     locateOnStartup?: boolean | undefined;
+    openOnStartup?: boolean | undefined;
     filter: Filter;
     callback?: ((event: MonkeyEvents) => void) | undefined
 }

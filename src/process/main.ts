@@ -1,4 +1,4 @@
-import { DataResponse, HTTPStatusCodes, IPCSource, Process, Setting } from "@nexus-app/nexus-module-builder"
+import { DataResponse, HTTPStatusCodes, IPCSource, Process } from "@nexus-app/nexus-module-builder"
 import Monkey from "./monkey";
 import { MonkeyParams } from "./monkey-params";
 import { windowManager } from "node-window-manager";

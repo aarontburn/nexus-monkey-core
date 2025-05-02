@@ -13,13 +13,13 @@ const TOTAL_CHECK_TIME_SEC: number = 10;
 export default class Monkey {
 
     private readonly process: MonkeyCoreProcess;
+    private readonly nexusWindow: BaseWindow;
+    private readonly nexusWindowHandle: number;
+    private readonly monkeyParams: MonkeyParams;
 
-    private nexusWindowHandle: number;
+    public isCurrentlyShown: boolean;
 
-    public isShown: boolean;
     public appWindow: Window;
-
-    public monkeyParams: MonkeyParams;
 
     private windowCheckerInterval: NodeJS.Timeout;
 
@@ -27,21 +27,22 @@ export default class Monkey {
 
 
     public constructor(process: MonkeyCoreProcess, monkeyParams: MonkeyParams) {
+        this.nexusWindow = BaseWindow.getAllWindows()[0];
         this.monkeyParams = monkeyParams;
         this.process = process;
-        this.isShown = monkeyParams.isShown;
+        this.isCurrentlyShown = monkeyParams.isShown;
 
         windowManager.on('window-activated', this.onWindowChange.bind(this));
 
-        this.nexusWindowHandle = BaseWindow.getAllWindows()[0].getNativeWindowHandle().readInt32LE(0);
+        this.nexusWindowHandle = this.nexusWindow.getNativeWindowHandle().readInt32LE(0);
 
         if (monkeyParams.locateOnStartup) {
-            this.waitForWindow();
+            this.waitForWindow(true);
         }
     }
 
-    public waitForWindow() {
-        this.waitForRealWindow().then((appWindow: Window) => {
+    public waitForWindow(startup: boolean = false) {
+        this.waitForRealWindow(startup).then((appWindow: Window) => {
             this.attachHandlersToWindow(appWindow);
         }).catch(err => {
             console.error(err);
@@ -52,8 +53,8 @@ export default class Monkey {
 
     private onWindowChange(window: Window) {
         if (window.path === this.monkeyParams.exePath) { // activated window, swap modules?
-            if (BaseWindow.getAllWindows()[0].isMinimized()) {
-                BaseWindow.getAllWindows()[0].restore();
+            if (this.nexusWindow.isMinimized()) {
+                this.nexusWindow.restore();
             }
             this.process.requestExternal(this.monkeyParams.sourceModule.getIPCSource(), "request-swap");
         }
@@ -61,14 +62,14 @@ export default class Monkey {
 
 
 
-    private waitForRealWindow(): Promise<Window> {
+    private waitForRealWindow(startup: boolean = false): Promise<Window> {
         return new Promise((resolve, reject) => {
             const startMS: number = Date.now();
             let checkCount: number = 0;
 
 
             const check = () => {
-                if (checkCount === 1) { // attempt to spawn the window after 1 try
+                if (startup && this.monkeyParams.openOnStartup && checkCount === 1) {
                     if (this.monkeyParams.exePath.trim() !== "") {
                         console.info(`🐒 ${this.monkeyParams.appName} Monkey: Making a new ${this.monkeyParams.appName} instance.`);
                         spawn(this.monkeyParams.exePath, [], { detached: !this.monkeyParams.closeOnExit, stdio: 'ignore' })
@@ -120,7 +121,7 @@ export default class Monkey {
             }
         }, 1000);
 
-        if (this.isShown) {
+        if (this.isCurrentlyShown) {
             this.show();
         } else {
             this.hide();
@@ -129,10 +130,9 @@ export default class Monkey {
         appWindow.setOwner(this.nexusWindowHandle);
 
         this.resize();
-        const window: BaseWindow = BaseWindow.getAllWindows()[0];
-        window.contentView.children[0].on('bounds-changed', this.resizeListener)
-        window.on('resize', this.resizeListener)
-        window.on('move', this.resizeListener)
+        this.nexusWindow.contentView.children[0].on('bounds-changed', this.resizeListener)
+        this.nexusWindow.on('resize', this.resizeListener)
+        this.nexusWindow.on('move', this.resizeListener)
     }
 
     private readonly resizeListener = () => this.resize();
@@ -148,11 +148,10 @@ export default class Monkey {
         clearInterval(this.windowCheckerInterval);
 
         windowManager.removeAllListeners();
-        const window: BaseWindow = BaseWindow.getAllWindows()[0];
 
-        window.contentView.children[0].removeListener('bounds-changed', this.resizeListener);
-        window.removeListener('resize', this.resizeListener);
-        window.removeListener('move', this.resizeListener);
+        this.nexusWindow.contentView.children[0].removeListener('bounds-changed', this.resizeListener);
+        this.nexusWindow.removeListener('resize', this.resizeListener);
+        this.nexusWindow.removeListener('move', this.resizeListener);
     }
 
     public detach() {
@@ -179,7 +178,7 @@ export default class Monkey {
     }
 
     public show() {
-        this.isShown = true;
+        this.isCurrentlyShown = true;
         if (!this.isAttached) {
             return;
         }
@@ -194,7 +193,7 @@ export default class Monkey {
     }
 
     public hide() {
-        this.isShown = false;
+        this.isCurrentlyShown = false;
 
         if (!this.isAttached) {
             return;
@@ -206,10 +205,9 @@ export default class Monkey {
     }
 
     private getMonitorSize(): Rectangle {
-        const window: BaseWindow = BaseWindow.getAllWindows()[0];
         const appScale: number | undefined = this.appWindow?.getMonitor().getScaleFactor();
-        const scale = screen.getDisplayMatching(window.getBounds()).scaleFactor;
-        const display = screen.getDisplayMatching(window.getBounds()).bounds;
+        const scale = screen.getDisplayMatching(this.nexusWindow.getBounds()).scaleFactor;
+        const display = screen.getDisplayMatching(this.nexusWindow.getBounds()).bounds;
         return {
             x: Math.floor(display.x * scale / appScale),
             y: Math.floor(display.y * scale / appScale),
@@ -225,20 +223,19 @@ export default class Monkey {
         }
 
         if (this.isMinimized()) {
-            if (this.isShown) {
+            if (this.isCurrentlyShown) {
                 this.appWindow.restore()
             } else {
                 return;
             }
         }
 
-        const window: BaseWindow = BaseWindow.getAllWindows()[0];
-        const windowZoom = (window.contentView.children[0] as WebContentsView).webContents.zoomFactor
+        const windowZoom = (this.nexusWindow.contentView.children[0] as WebContentsView).webContents.zoomFactor
 
         const appMonitorSize: Rectangle = this.getMonitorSize();
-        const windowContentBounds = window.getContentBounds();
+        const windowContentBounds = this.nexusWindow.getContentBounds();
 
-        const screenBounds = screen.getDisplayMatching(window.getBounds()).bounds
+        const screenBounds = screen.getDisplayMatching(this.nexusWindow.getBounds()).bounds
         let scales = {
             width: screenBounds.width / appMonitorSize.width,
             height: screenBounds.height / appMonitorSize.height
