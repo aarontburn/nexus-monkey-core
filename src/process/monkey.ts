@@ -5,8 +5,7 @@ import MonkeyCoreProcess from "./main";
 import { screen } from "electron"
 import { MonkeyParams } from "./monkey-params";
 
-const MINIMIZED_WIDTH: number = 160
-
+const MINIMIZED_WIDTH: number = 160;
 const SEC_PER_CHECK: number = 1;
 const TOTAL_CHECK_TIME_SEC: number = 10;
 
@@ -17,28 +16,28 @@ export default class Monkey {
     private readonly nexusWindowHandle: number;
     private readonly monkeyParams: MonkeyParams;
 
-    public isCurrentlyShown: boolean;
 
     public appWindow: Window;
-
     private windowCheckerInterval: NodeJS.Timeout;
-
     private isAttached: boolean = true;
 
-
     public constructor(process: MonkeyCoreProcess, monkeyParams: MonkeyParams) {
+        this.process = process;
         this.nexusWindow = BaseWindow.getAllWindows()[0];
         this.monkeyParams = monkeyParams;
-        this.process = process;
-        this.isCurrentlyShown = monkeyParams.isShown;
 
         windowManager.on('window-activated', this.onWindowChange.bind(this));
 
         this.nexusWindowHandle = this.nexusWindow.getNativeWindowHandle().readInt32LE(0);
 
-        if (monkeyParams.locateOnStartup) {
+
+        if (monkeyParams.options.locateOnStartup) {
             this.waitForWindow(true);
+        } else if (monkeyParams.options.openOnStartup) {
+            this.spawnApp();
+
         }
+
     }
 
     public waitForWindow(startup: boolean = false) {
@@ -49,10 +48,24 @@ export default class Monkey {
         });
     }
 
+    private spawnApp() {
+        if (this.monkeyParams.exePath.trim() !== "") {
+            console.info(`🐒 ${this.monkeyParams.appName} Monkey: Making a new ${this.monkeyParams.appName} instance.`);
+            spawn(this.monkeyParams.exePath, [], { detached: !this.monkeyParams.options.closeOnExit, stdio: 'ignore' })
+                .on('error', (err: any) => {
+                    if (err.code === "ENOENT") { // file doesn't exist
+                        console.warn(`🐒 ${this.monkeyParams.appName} Monkey: Could not make a new instance from path ${this.monkeyParams.exePath}`);
+                    } else {
+                        console.error(err)
+                    }
+                });
+        }
+    }
+
 
 
     private onWindowChange(window: Window) {
-        if (window.path === this.monkeyParams.exePath) { // activated window, swap modules?
+        if (window.path === (this.monkeyParams.windowPath ?? this.monkeyParams.exePath)) { // activated window, swap modules?
             if (this.nexusWindow.isMinimized()) {
                 this.nexusWindow.restore();
             }
@@ -62,25 +75,15 @@ export default class Monkey {
 
 
 
-    private waitForRealWindow(startup: boolean = false): Promise<Window> {
+    private waitForRealWindow(firstLaunch: boolean = false): Promise<Window> {
         return new Promise((resolve, reject) => {
             const startMS: number = Date.now();
             let checkCount: number = 0;
 
 
             const check = () => {
-                if (startup && this.monkeyParams.openOnStartup && checkCount === 1) {
-                    if (this.monkeyParams.exePath.trim() !== "") {
-                        console.info(`🐒 ${this.monkeyParams.appName} Monkey: Making a new ${this.monkeyParams.appName} instance.`);
-                        spawn(this.monkeyParams.exePath, [], { detached: !this.monkeyParams.closeOnExit, stdio: 'ignore' })
-                            .on('error', (err: any) => {
-                                if (err.code === "ENOENT") { // file doesn't exist
-                                    console.warn(`🐒 ${this.monkeyParams.appName} Monkey: Could not make a new instance from path ${this.monkeyParams.exePath}`);
-                                } else {
-                                    console.error(err)
-                                }
-                            });
-                    }
+                if (firstLaunch && this.monkeyParams.options.openOnStartup && checkCount === 1) {
+                    this.spawnApp();
                 }
 
                 const best: Window | undefined = this.findBestWindow();
@@ -105,7 +108,7 @@ export default class Monkey {
 
     private attachHandlersToWindow(appWindow: Window, newWindow: boolean = true) {
         if (newWindow) {
-            this.monkeyParams.callback("found-window");
+            this.monkeyParams.onEvent("found-window");
         }
 
 
@@ -121,7 +124,7 @@ export default class Monkey {
             }
         }, 1000);
 
-        if (this.isCurrentlyShown) {
+        if (this.monkeyParams.options.isCurrentlyShown) {
             this.show();
         } else {
             this.hide();
@@ -141,7 +144,7 @@ export default class Monkey {
         clearInterval(this.windowCheckerInterval);
 
         console.warn(`🐒 ${this.monkeyParams.appName} Monkey: Lost reference to window.`);
-        this.monkeyParams.callback("lost-window");
+        this.monkeyParams.onEvent("lost-window");
     }
 
     public cleanup() {
@@ -178,11 +181,11 @@ export default class Monkey {
     }
 
     public show() {
-        this.isCurrentlyShown = true;
+        this.monkeyParams.options.isCurrentlyShown = true;
         if (!this.isAttached) {
             return;
         }
-        this.monkeyParams.callback("show");
+        this.monkeyParams.onEvent("show");
 
         this.appWindow?.restore();
         this.appWindow?.setOpacity(1);
@@ -193,12 +196,12 @@ export default class Monkey {
     }
 
     public hide() {
-        this.isCurrentlyShown = false;
+        this.monkeyParams.options.isCurrentlyShown = false;
 
         if (!this.isAttached) {
             return;
         }
-        this.monkeyParams.callback("hide");
+        this.monkeyParams.onEvent("hide");
 
         this.appWindow?.toggleTransparency(true);
         this.appWindow?.setOpacity(0);
@@ -223,29 +226,29 @@ export default class Monkey {
         }
 
         if (this.isMinimized()) {
-            if (this.isCurrentlyShown) {
+            if (this.monkeyParams.options.isCurrentlyShown) {
                 this.appWindow.restore()
             } else {
                 return;
             }
         }
 
-        const windowZoom = (this.nexusWindow.contentView.children[0] as WebContentsView).webContents.zoomFactor
+        const windowZoom: number = (this.nexusWindow.contentView.children[0] as WebContentsView).webContents.zoomFactor
 
         const appMonitorSize: Rectangle = this.getMonitorSize();
-        const windowContentBounds = this.nexusWindow.getContentBounds();
+        const windowContentBounds: Rectangle = this.nexusWindow.getContentBounds();
 
-        const screenBounds = screen.getDisplayMatching(this.nexusWindow.getBounds()).bounds
+        const screenBounds: Rectangle = screen.getDisplayMatching(this.nexusWindow.getBounds()).bounds
         let scales = {
             width: screenBounds.width / appMonitorSize.width,
             height: screenBounds.height / appMonitorSize.height
         }
 
         this.appWindow?.setBounds({
-            x: (windowContentBounds.x + 70 * windowZoom) / scales.height,
-            y: (windowContentBounds.y + 35 * windowZoom + 1) / scales.height,
-            width: (windowContentBounds.width - 70 * windowZoom) / scales.width,
-            height: (windowContentBounds.height - 35 * windowZoom - 1) / scales.height,
+            x: (windowContentBounds.x + (70 + (this.monkeyParams.options.offset.x ?? 0)) * windowZoom) / scales.height,
+            y: (windowContentBounds.y + (this.monkeyParams.options.offset.y ?? 0) * windowZoom + 1) / scales.height,
+            width: (windowContentBounds.width - (70 + (this.monkeyParams.options.offset.width ?? 0)) * windowZoom) / scales.width,
+            height: (windowContentBounds.height + (this.monkeyParams.options.offset.height ?? 0) * windowZoom - 1) / scales.height,
         });
 
     }
