@@ -4,6 +4,7 @@ import { Window, windowManager } from "node-window-manager";
 import MonkeyCoreProcess from "./main";
 import { screen } from "electron"
 import { MonkeyParams } from "./monkey-params";
+import { normalize } from "path";
 
 const MINIMIZED_WIDTH: number = 160;
 const SEC_PER_CHECK: number = 1;
@@ -42,22 +43,19 @@ export default class Monkey {
 
     public waitForWindow(startup: boolean = false) {
         this.waitForRealWindow(startup).then((appWindow: Window) => {
-            this.attachHandlersToWindow(appWindow);
-        }).catch(err => {
-            console.error(err);
+            if (appWindow) {
+                this.attachHandlersToWindow(appWindow);
+            }
         });
     }
 
     private spawnApp() {
         if (this.monkeyParams.exePath.trim() !== "") {
-            console.info(`🐒 ${this.monkeyParams.appName} Monkey: Making a new ${this.monkeyParams.appName} instance.`);
+            this.monkeyParams.onEvent('new-instance');
+
             spawn(this.monkeyParams.exePath, [], { detached: !this.monkeyParams.options.closeOnExit, stdio: 'ignore' })
                 .on('error', (err: any) => {
-                    if (err.code === "ENOENT") { // file doesn't exist
-                        console.warn(`🐒 ${this.monkeyParams.appName} Monkey: Could not make a new instance from path ${this.monkeyParams.exePath}`);
-                    } else {
-                        console.error(err)
-                    }
+                    this.monkeyParams.onEvent('new-instance-failed', err);
                 });
         }
     }
@@ -65,7 +63,7 @@ export default class Monkey {
 
 
     private onWindowChange(window: Window) {
-        if (window.path === (this.monkeyParams.windowPath ?? this.monkeyParams.exePath)) { // activated window, swap modules?
+        if (normalize(window.path) === normalize(this.monkeyParams.windowPath ?? this.monkeyParams.exePath)) { // activated window, swap modules?
             if (this.nexusWindow.isMinimized()) {
                 this.nexusWindow.restore();
             }
@@ -76,7 +74,7 @@ export default class Monkey {
 
 
     private waitForRealWindow(firstLaunch: boolean = false): Promise<Window> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const startMS: number = Date.now();
             let checkCount: number = 0;
 
@@ -88,12 +86,13 @@ export default class Monkey {
 
                 const best: Window | undefined = this.findBestWindow();
                 if (best !== undefined) {
-                    console.info(`🐒 ${this.monkeyParams.appName} Monkey: Located window in ${checkCount + 1} attempts.`);
+                    this.monkeyParams.onEvent("window-found", checkCount + 1);
                     return resolve(best);
                 }
 
                 if (Date.now() - startMS >= (TOTAL_CHECK_TIME_SEC * 1000)) {
-                    return reject(`🐒 ${this.monkeyParams.appName} Monkey: Could not locate ${this.monkeyParams.appName} within timeout.`);
+                    this.monkeyParams.onEvent("window-not-found");
+                    return resolve(undefined);
                 }
 
                 setTimeout(check, (SEC_PER_CHECK * 1000));
@@ -106,12 +105,7 @@ export default class Monkey {
 
 
 
-    private attachHandlersToWindow(appWindow: Window, newWindow: boolean = true) {
-        if (newWindow) {
-            this.monkeyParams.onEvent("found-window");
-        }
-
-
+    private attachHandlersToWindow(appWindow: Window) {
         this.isAttached = true;
 
         this.appWindow = appWindow;
@@ -143,7 +137,6 @@ export default class Monkey {
     private onWindowLost() {
         clearInterval(this.windowCheckerInterval);
 
-        console.warn(`🐒 ${this.monkeyParams.appName} Monkey: Lost reference to window.`);
         this.monkeyParams.onEvent("lost-window");
     }
 
@@ -160,18 +153,15 @@ export default class Monkey {
     public detach() {
         this.isAttached = false;
 
-        console.info(`🐒 ${this.monkeyParams.appName} Monkey: Detaching window.`);
         this.appWindow.setOwner(null);
         this.show()
-
     }
 
     public reattach() {
         this.isAttached = true;
 
-        console.info(`🐒 ${this.monkeyParams.appName} Monkey: Reattaching window.`);
         this.appWindow.setOwner(this.nexusWindowHandle);
-        this.attachHandlersToWindow(this.appWindow, false);
+        this.attachHandlersToWindow(this.appWindow);
         this.show()
 
     }

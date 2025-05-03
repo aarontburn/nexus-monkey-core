@@ -9,7 +9,7 @@ export interface MonkeyParams {
     exePath: string;
     windowPath?: string;
     filter: Filter;
-    onEvent?: ((event: MonkeyEvents) => void) | undefined,
+    onEvent?: ((event: MonkeyEvents, data?: any) => void) | undefined,
     options?: {
         closeOnExit?: boolean;
         isCurrentlyShown?: boolean;
@@ -20,6 +20,7 @@ export interface MonkeyParams {
 }
 
 export const defaultOptions = {
+    closeOnExit: false,
     isCurrentlyShown: false,
     locateOnStartup: false,
     openOnStartup: false,
@@ -29,7 +30,10 @@ export const defaultOptions = {
 export type Filter = (window: Window) => boolean;
 
 export type MonkeyEvents =
-    "found-window" |
+    "window-found" |
+    "window-not-found" |
     "show" |
     "hide" |
-    "lost-window"
+    "lost-window" |
+    "new-instance" |
+    "new-instance-failed"
