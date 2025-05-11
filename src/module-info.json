@@ -1,11 +1,15 @@
 {
     "name": "Monkey Core",
     "id": "aarontburn.Monkey_Core",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "author": "aarontburn",
     "description": "A library to manage external windows.",
     "platforms": [],
     "link": "https://github.com/aarontburn/nexus-monkey-core",
+    "git-latest": {
+        "git-username": "aarontburn",
+        "git-repo-name": "nexus-monkey-core"
+    },
     "build": {
         "build-version": 8,
         "excluded": [
@@ -25,8 +29,7 @@
                 "from": "{EXPORTED_MODULE_NAME}",
                 "to": "%name%",
                 "at": [
-                    "./process/main.ts",
-                    "./module-info.json"
+                    "./process/main.ts"
                 ]
             }
         ]
