@@ -63,6 +63,11 @@ export default class Monkey {
 
 
     private onWindowChange(window: Window) {
+        if (!window.path || !(this.monkeyParams.windowPath ?? this.monkeyParams.exePath)) {
+            return;
+        }
+
+
         if (normalize(window.path) === normalize(this.monkeyParams.windowPath ?? this.monkeyParams.exePath)) { // activated window, swap modules?
             if (this.nexusWindow.isMinimized()) {
                 this.nexusWindow.restore();

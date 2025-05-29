@@ -1,8 +1,9 @@
 {
     "name": "Monkey Core",
     "id": "aarontburn.Monkey_Core",
-    "version": "1.0.2",
+    "version": "1.0.4",
     "author": "aarontburn",
+    "author-id": "683193056e5989838dcf772c",
     "description": "A library to manage external windows.",
     "platforms": [],
     "link": "https://github.com/aarontburn/nexus-monkey-core",
@@ -11,7 +12,7 @@
         "git-repo-name": "nexus-monkey-core"
     },
     "build": {
-        "build-version": 8,
+        "build-version": 11,
         "excluded": [
             "electron.ts"
         ],
