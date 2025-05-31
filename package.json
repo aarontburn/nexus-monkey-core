@@ -1,9 +1,10 @@
 {
   "scripts": {
     "postinstall": "npm install @nexus-app/nexus-client@latest",
-    "start": "npm run dev_export && cd ./node_modules/@nexus-app/nexus-client/ && npm start",
+    "start": "npm run export:dev && cd ./node_modules/@nexus-app/nexus-client/ && npm start",
     "export": "node node_modules/@nexus-app/nexus-exporter/exporter.js",
-    "dev_export": "node node_modules/@nexus-app/nexus-exporter/exporter.js --dev"
+    "export:dev": "node node_modules/@nexus-app/nexus-exporter/exporter.js --dev",
+    "export:output-dir": "node node_modules/@nexus-app/nexus-exporter/exporter.js --default-location"
   },
   "devDependencies": {
     "@nexus-app/nexus-client": "^0.0.10",
