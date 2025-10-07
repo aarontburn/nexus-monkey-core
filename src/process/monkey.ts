@@ -200,6 +200,7 @@ export default class Monkey {
 
         this.appWindow?.toggleTransparency(true);
         this.appWindow?.setOpacity(0);
+        this.appWindow?.hide();
     }
 
     private getMonitorSize(): Rectangle {
