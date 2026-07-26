@@ -4,6 +4,7 @@ A internal module for [Nexus](https://github.com/aarontburn/nexus-core). Used to
 
 ## Demo
 https://github.com/user-attachments/assets/2a465093-ccfa-4506-b750-93e3375d8719
+
 <video width="100%" controls src="https://github.com/aarontburn/nexus-monkey-core/raw/main/repo-assets/monkey-core-demo.mp4" title="Monkey Core Demo"></video>
 
 # Automatic Installation
