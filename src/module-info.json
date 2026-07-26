@@ -5,7 +5,7 @@
     "author": "aarontburn",
     "author-id": "683193056e5989838dcf772c",
     "description": "A library to manage external windows.",
-    "platforms": [],
+    "platforms": ["win"],
     "link": "https://github.com/aarontburn/nexus-monkey-core",
     "git-latest": {
         "git-username": "aarontburn",
