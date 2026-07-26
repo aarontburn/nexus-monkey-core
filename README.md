@@ -1,10 +1,12 @@
+
+
+
 # Nexus Monkey Core
 
 A internal module for [Nexus](https://github.com/aarontburn/nexus-core). Used to "embed" native Windows applications into Nexus.
 
 ## Demo
-
-<video controls src="repo-assets/monkey-core-demo.mp4" title="Monkey Core Demo"></video>
+https://github.com/user-attachments/assets/2a465093-ccfa-4506-b750-93e3375d8719
 
 # Automatic Installation
 1. Ensure you have [Nexus](https://github.com/aarontburn/nexus-core) installed.
