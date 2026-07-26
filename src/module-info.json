@@ -12,7 +12,7 @@
         "git-repo-name": "nexus-monkey-core"
     },
     "build": {
-        "build-version": 12,
+        "build-version": 13,
         "excluded": [
             "electron.ts"
         ],
